@@ -1,0 +1,4 @@
+[package]
+name = "word2vec"
+version = "0.1.0"
+authors = ["Dima Kudosh <dimakudosh@gmail.com>"]

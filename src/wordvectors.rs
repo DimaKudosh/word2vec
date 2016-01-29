@@ -3,6 +3,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::io::SeekFrom;
 use std::fs::File;
+use std::mem;
 
 /*
 from __future__ import division, print_function, unicode_literals
@@ -59,26 +60,7 @@ class WordVectors(object):
         idx = self.ix(word)
         return self.vectors[idx]
 
-    def cosine(self, word, n=10):
-        """
-        Cosine similarity.
-        metric = dot(vectors_of_vectors, vectors_of_target_vector)
-        Uses a precomputed vectors of the vectors
-        Parameters
-        ----------
-        word : string
-        n : int, optional (default 10)
-            number of neighbors to return
-        Returns
-        -------
-        2 numpy.array:
-            1. position in self.vocab
-            2. cosine similarity
-        """
-        metrics = np.dot(self.vectors, self[word].T)
-        best = np.argsort(metrics)[::-1][1:n+1]
-        best_metrics = metrics[best]
-        return best, best_metrics
+   
 
     def analogy(self, pos, neg, n=10):
         """
@@ -228,10 +210,9 @@ class WordVectors(object):
         return cls(vocab=memmaped.vocab, vectors=memmaped.vectors)
  */
 
-
 pub struct WordVector {
     vocabulary: Vec<String>,
-    vectors: Vec<String>,
+    vectors: Vec<Vec<f32>>,
     clusters: Option<Vec<String>>
 }
 
@@ -255,19 +236,51 @@ impl WordVector{
 			word_bytes.pop();
 			let word = String::from_utf8(word_bytes).unwrap();
 			vocabulary[i] = word;
-			{
-			    let reader_ref = reader.by_ref();
-			    let mut chunk = reader_ref.take(vector_length);
-                let result = chunk.read_to_end(&mut vector_bytes);
-                // to do: parse result
+			let mut current_vector = Vec::new();
+			for j in 0..vector_size{
+				let mut buf: [u8; 4] = [0; 4];
+				reader.read(&mut buf);
+				unsafe{
+					let b = mem::transmute::<[u8; 4], f32>(buf);
+					current_vector.push(b);
+				}
 			}
+			vectors.push(current_vector);
 			reader.seek(SeekFrom::Current(1));
-		}
+		}		
 		WordVector{
 			vocabulary: vocabulary,
-			vectors: Vec::new(),
+			vectors: vectors,
 			clusters: None
 		}
-		
 	}
+
+	pub fn get_index(&self, word: &str) -> Option<usize>
+	{
+		return self.vocabulary.iter().position(|x| x == word);
+	}
+	/*
+	 def cosine(self, word, n=10):
+        """
+        Cosine similarity.
+        metric = dot(vectors_of_vectors, vectors_of_target_vector)
+        Uses a precomputed vectors of the vectors
+        Parameters
+        ----------
+        word : string
+        n : int, optional (default 10)
+            number of neighbors to return
+        Returns
+        -------
+        2 numpy.array:
+            1. position in self.vocab
+            2. cosine similarity
+        """
+        metrics = np.dot(self.vectors, self[word].T)
+        best = np.argsort(metrics)[::-1][1:n+1]
+        best_metrics = metrics[best]
+        return best, best_metrics
+	*/
+
+
 }

@@ -3,6 +3,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::io::SeekFrom;
 use std::fs::File;
+use std::cmp::Ordering;
 use std::mem;
 
 
@@ -11,6 +12,15 @@ pub struct WordVector {
     pub vectors: Vec<Vec<f32>>,
     clusters: Option<Vec<String>>
 }
+
+fn dot_product(arr1: &Vec<f32>, arr2: &Vec<f32>) -> f32
+	{
+		let mut result: f32 = 0.0;
+		for (elem1, elem2) in arr1.iter().zip(arr2.iter()){
+			result += elem1 * elem2;
+		}
+		return result;
+	}
 
 impl WordVector{
 	pub fn load_from_binary(file_name: &str) -> WordVector
@@ -35,7 +45,7 @@ impl WordVector{
 			for j in 0..vector_size{
 				let mut buf: [u8; 4] = [0; 4];
 				reader.read(&mut buf);
-				let vec = unsafe{mem::transmute::<[u8; 4], f32>(buf)};
+				let vec = unsafe{ mem::transmute::<[u8; 4], f32>(buf) };
 				current_vector.push(vec);
 			}
 			vectors.push(current_vector);
@@ -63,4 +73,26 @@ impl WordVector{
 		    None => None,
 		}
 	}
+
+	pub fn cosine(&self, word: &str) -> Option<Vec<(String, f32)>>
+	{
+		let word_vector = self.get_vector(word);
+		match word_vector {
+		    Some(val) => {
+		        let mut metrics: Vec<(usize, f32)> = Vec::new();
+		        for (index, value) in self.vectors.iter().enumerate(){
+		    	    metrics.push((index, dot_product(value, val)));
+		        }
+		        metrics.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
+		        metrics.truncate(20);
+		        let mut result: Vec<(String, f32)> = Vec::new();
+		        for metric in metrics.iter().skip(1){
+		    	    result.push((self.vocabulary[metric.0].clone(), metric.1));
+		        }
+		        return Some(result)
+	        },
+		    None => None,
+		}
+	}
+
 }

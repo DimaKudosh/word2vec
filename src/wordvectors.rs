@@ -10,6 +10,7 @@ use utils;
 
 pub struct WordVector {
     vocabulary: Vec<(String, Vec<f32>)>,
+    vector_size: usize,
     clusters: Option<Vec<String>>
 }
 
@@ -42,6 +43,7 @@ impl WordVector{
 		}
 		WordVector{
 			vocabulary: vocabulary,
+			vector_size: vector_size,
 			clusters: None
 		}
 	}
@@ -78,6 +80,41 @@ impl WordVector{
 	        },
 		    None => None,
 		}
+	}
+
+	pub fn analogy(&self, pos: Vec<&str>, neg: Vec<&str>) -> Option<Vec<(String, f32)>>
+	{
+		let mut vectors: Vec<Vec<f32>> = Vec::new();
+		for word in pos.iter(){
+			match self.get_vector(word){
+				Some(val) => {
+					vectors.push(val.clone())
+				},
+				None => {}
+			}
+		}
+		for word in neg.iter(){
+			match self.get_vector(word) {
+			    Some(val) => vectors.push(val.iter().map(|x| -x).collect::<Vec<f32>>()),
+			    None => {},
+			}
+		}
+		let mut mean: Vec<f32> = Vec::with_capacity(self.vector_size);
+		for i in 0..self.vector_size{
+			let mut new_vec = Vec::new();
+			for vector in vectors.iter(){
+				new_vec.push(vector[i]);
+			}
+			mean.push(utils::mean(new_vec));
+		}
+		let mut metrics: Vec<(String, f32)> = Vec::new();
+		for word in self.vocabulary.iter(){
+		    metrics.push((word.0.clone(), utils::dot_product(&word.1, &mean)));
+		}
+		metrics.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
+		metrics.remove(0);
+		metrics.truncate(20);
+		return Some(metrics)
 	}
 
 }

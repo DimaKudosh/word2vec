@@ -5,7 +5,9 @@ use std::io::SeekFrom;
 use std::fs::File;
 use std::cmp::Ordering;
 use std::mem;
+use std::thread;
 use utils;
+use errors::Word2VecError;
 
 
 pub struct WordVector {
@@ -15,21 +17,24 @@ pub struct WordVector {
 }
 
 impl WordVector{
-	pub fn load_from_binary(file_name: &str) -> WordVector
+	pub fn load_from_binary(file_name: &str) -> Result<WordVector, Word2VecError>
 	{
-		let mut file = File::open(file_name).unwrap();
+		let mut file = try!(File::open(file_name));
 		let mut reader = BufReader::new(file);
 		let mut header = String::new();
-		reader.read_line(&mut header).unwrap();
-		let mut header_info = header.split_whitespace().map(|x| x.parse::<usize>().unwrap()).take(2);
-		let vocabulary_size = header_info.next().unwrap();
-		let vector_size = header_info.next().unwrap();
+		try!(reader.read_line(&mut header));
+		let mut header_info = header.split_whitespace().filter_map(|x| x.parse::<usize>().ok()).take(2).collect::<Vec<usize>>();
+		if header_info.len() != 2{
+			return Err(Word2VecError::WrongHeader)
+		}
+		let vocabulary_size = header_info[0];
+		let vector_size = header_info[1];
 		let mut vocabulary: Vec<(String, Vec<f32>)> = Vec::with_capacity(vocabulary_size);
 		for i in 0..vocabulary_size{
 			let mut word_bytes: Vec<u8> = Vec::new();
-			reader.read_until(b' ', &mut word_bytes).unwrap();
+			try!(reader.read_until(b' ', &mut word_bytes));
 			word_bytes.pop();
-			let word = String::from_utf8(word_bytes).unwrap();
+			let word = try!(String::from_utf8(word_bytes));
 			let mut current_vector: Vec<f32> = Vec::with_capacity(vector_size);
 			for j in 0..vector_size{
 				let mut buf: [u8; 4] = [0; 4];
@@ -41,11 +46,11 @@ impl WordVector{
 			vocabulary.push((word, current_vector));
 			reader.seek(SeekFrom::Current(1));
 		}
-		WordVector{
+		Ok(WordVector{
 			vocabulary: vocabulary,
 			vector_size: vector_size,
 			clusters: None
-		}
+		})
 	}
 
 	fn get_index(&self, word: &str) -> Option<usize>

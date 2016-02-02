@@ -106,6 +106,9 @@ impl WordVector{
 			    None => {},
 			}
 		}
+		if exclude.is_empty(){
+			return None
+		}
 		let mut mean: Vec<f32> = Vec::with_capacity(self.vector_size);
 		for i in 0..self.vector_size{
 			let mut new_vec = Vec::new();

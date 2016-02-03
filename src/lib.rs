@@ -1,5 +1,5 @@
 pub mod wordvectors;
 pub mod wordclusters;
-pub mod utils;
+mod utils;
 pub mod errors;
-mod test;
+//mod test;

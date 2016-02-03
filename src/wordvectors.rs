@@ -1,12 +1,9 @@
-use std::io;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::io::SeekFrom;
 use std::fs::File;
 use std::cmp::Ordering;
 use std::mem;
-use std::thread;
-use std::sync::{Arc, Mutex};
 use utils;
 use errors::Word2VecError;
 

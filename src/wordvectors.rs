@@ -10,8 +10,7 @@ use errors::Word2VecError;
 
 pub struct WordVector {
     vocabulary: Vec<(String, Vec<f32>)>,
-    vector_size: usize,
-    clusters: Option<Vec<String>>
+    vector_size: usize
 }
 
 impl WordVector{

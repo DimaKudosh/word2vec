@@ -2,3 +2,18 @@
 name = "word2vec"
 version = "0.1.0"
 authors = ["Dima Kudosh <dimakudosh@gmail.com>"]
+description = "Rust interface to word2vec."
+documentation = "https://github.com/DimaKudosh/word2vec/wiki"
+homepage = "https://github.com/DimaKudosh/word2vec"
+repository = "https://github.com/DimaKudosh/word2vec"
+keywords = ["word2vec"]
+license = "Unlicense"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
+
+
+
+[[test]]
+name = "tests"

@@ -46,7 +46,6 @@ impl WordVector{
 		Ok(WordVector{
 			vocabulary: vocabulary,
 			vector_size: vector_size,
-			clusters: None
 		})
 	}
 

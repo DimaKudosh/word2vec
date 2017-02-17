@@ -13,8 +13,8 @@ use errors::Word2VecError;
 /// Each word of a vocabulary is represented by a vector. All words span a vector space. This data
 /// structure manages this vector space of words.
 pub struct WordVector {
-    vocabulary: Vec<(String, Vec<f32>)>,
-    vector_size: usize
+	vocabulary: Vec<(String, Vec<f32>)>,
+	vector_size: usize
 }
 
 impl WordVector{
@@ -67,10 +67,10 @@ impl WordVector{
 	{
 		let index = self.get_index(word);
 		match index {
-		    Some(val) => {
-		    	return Some(&self.vocabulary[val].1)
-		    },
-		    None => None,
+			Some(val) => {
+				Some(&self.vocabulary[val].1)
+			},
+			None => None,
 		}
 	}
 
@@ -133,8 +133,36 @@ impl WordVector{
 	}
 
 	/// Get the count of all known words from the vocabulary.
-	pub fn word_count(&self) -> usize {
+	pub fn word_count(&self) -> usize
+	{
 	    self.vocabulary.len()
     }
+
+    pub fn get_words<'a>(&'a self) -> Words<'a> {
+    	Words::new(&self.vocabulary)
+	}
+}
+
+pub struct Words<'parent> {
+	words: &'parent Vec<(String, Vec<f32>)>,
+	index: usize,
+}
+
+impl<'a> Words<'a> {
+	fn new(x: &'a Vec<(String, Vec<f32>)>) -> Words<'a> {
+		Words { words: x, index: 0 }
+	}
+}
+
+impl<'a> Iterator for Words<'a> {
+	type Item = String;
+
+	fn next(&mut self) -> Option<Self::Item>{
+		if self.index >= self.words.len() {
+			return None
+		}
+		self.index += 1;
+		Some(self.words[self.index - 1].0.clone())
+	}
 }
 

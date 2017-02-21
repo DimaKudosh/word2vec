@@ -9,15 +9,10 @@ const PATH: &'static str = "vectors.bin";
 fn test_word_cosine()
 {
 	let model = WordVector::load_from_binary(PATH).unwrap();
-	let result = model.cosine("winter", 10);
-	match result {
-		Some(res) => {
-	    	assert_eq!(res.len(), 10);
-	    	let only_words: Vec<&str> = res.iter().map(|x| x.0.as_ref()).collect();
-	    	assert!(!only_words.contains(&"winter"))
-		},
-	   		None => assert!(false),
-	}
+	let res = model.cosine("winter", 10).expect("word not found in vocabulary");
+    assert_eq!(res.len(), 10);
+    let only_words: Vec<&str> = res.iter().map(|x| x.0.as_ref()).collect();
+    assert!(!only_words.contains(&"winter"))
 }
 
 
@@ -40,17 +35,12 @@ fn test_word_analogy() {
 	pos.push("king");
 	let mut neg = Vec::new();
 	neg.push("man");
-	let result = model.analogy(pos, neg, 10);
-	match result {
-	    Some(res) => {
-	        assert_eq!(res.len(), 10);
-	    	let only_words: Vec<&str> = res.iter().map(|x| x.0.as_ref()).collect();
-	    	assert!(!only_words.contains(&"woman"));
-	    	assert!(!only_words.contains(&"king"));
-	    	assert!(!only_words.contains(&"man"));
-	    },
-	   	None => assert!(false),
-	}
+	let res = model.analogy(pos, neg, 10).expect("couldn't find all of the given words");
+    assert_eq!(res.len(), 10);
+    let only_words: Vec<&str> = res.iter().map(|x| x.0.as_ref()).collect();
+    assert!(!only_words.contains(&"woman"));
+    assert!(!only_words.contains(&"king"));
+    assert!(!only_words.contains(&"man"));
 }
 
 
@@ -63,3 +53,10 @@ fn test_word_analogy_with_empty_params() {
 	   	None => assert!(true),
 	}
 }
+
+#[test]
+fn test_word_count_is_correctly_returned() {
+    let v = WordVector::load_from_binary(PATH).unwrap();
+    assert_eq!(v.word_count(), 71291);
+}
+

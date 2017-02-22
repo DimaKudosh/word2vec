@@ -83,17 +83,17 @@ impl WordVector{
 	{
 		let word_vector = self.get_vector(word);
 		match word_vector {
-		    Some(val) => {
-		        let mut metrics: Vec<(String, f32)> = Vec::with_capacity(self.vocabulary.len());
-		        for word in self.vocabulary.iter(){
-		    	    metrics.push((word.0.clone(), utils::dot_product(&word.1, val)));
-		        }
-		        metrics.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
-		        metrics.remove(0);
-		        metrics.truncate(n);
-		        return Some(metrics)
-	        },
-		    None => None,
+			Some(val) => {
+				let mut metrics: Vec<(String, f32)> = Vec::with_capacity(self.vocabulary.len());
+				for word in self.vocabulary.iter(){
+					metrics.push((word.0.clone(), utils::dot_product(&word.1, val)));
+				}
+				metrics.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
+				metrics.remove(0);
+				metrics.truncate(n);
+				return Some(metrics)
+			},
+			None => None,
 		}
 	}
 
@@ -111,8 +111,8 @@ impl WordVector{
 		for word in neg.iter(){
 			exclude.push(word.to_string());
 			match self.get_vector(word) {
-			    Some(val) => vectors.push(val.iter().map(|x| -x).collect::<Vec<f32>>()),
-			    None => {},
+				Some(val) => vectors.push(val.iter().map(|x| -x).collect::<Vec<f32>>()),
+				None => {},
 			}
 		}
 		if exclude.is_empty(){
@@ -124,7 +124,7 @@ impl WordVector{
 		}
 		let mut metrics: Vec<(String, f32)> = Vec::new();
 		for word in self.vocabulary.iter(){
-		    metrics.push((word.0.clone(), utils::dot_product(&word.1, &mean)));
+			metrics.push((word.0.clone(), utils::dot_product(&word.1, &mean)));
 		}
 		metrics.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
 		metrics.retain(|x| exclude.contains(&x.0) == false);
@@ -132,14 +132,22 @@ impl WordVector{
 		Some(metrics)
 	}
 
-	/// Get the count of all known words from the vocabulary.
+	/// Get the number of all known words from the vocabulary.
 	pub fn word_count(&self) -> usize
 	{
-	    self.vocabulary.len()
-    }
+		self.vocabulary.len()
+	}
 
-    pub fn get_words<'a>(&'a self) -> Words<'a> {
-    	Words::new(&self.vocabulary)
+	/// Return the number of columns of the word vector.
+	pub fn get_col_count(&self) -> usize
+	{
+		self.vector_size // size == column count
+	}
+
+	/// Get all known words from the vocabulary.
+	pub fn get_words<'a>(&'a self) -> Words<'a>
+	{
+		Words::new(&self.vocabulary)
 	}
 }
 

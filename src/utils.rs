@@ -13,7 +13,9 @@ pub fn vector_norm(vector: Vec<f32>) -> Vec<f32>
 	vector.iter().map(|x| x * sum).collect::<Vec<f32>>()
 }
 
-pub fn mean(vector: Vec<f32>) -> f32
+/// Get the mean (average) of the given Iterator of numbers
+pub fn mean<Iterable: Iterator<Item=f32>>(numbers: Iterable) -> f32
 {
-	return vector.iter().fold(0f32, |sum, &x| sum + x) / vector.len() as f32
+	let (sum, count) = numbers.fold((0f32, 0), |(sum, count), x| (sum + x, count + 1));
+	sum / (count as f32)
 }

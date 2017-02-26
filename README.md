@@ -2,21 +2,21 @@
 
 Rust interface to word2vec.
 
-It's doesn't provide model training and it's works only with already trained model.
+It doesn't provide model training and works only with already trained model.
 
 
 ## Documentation
 Documentation is available at https://github.com/DimaKudosh/word2vec/wiki
 
 ## Example
-```
+```rust
 extern crate word2vec;
 
 
 fn main(){
 	let model = word2vec::wordvectors::WordVector::load_from_binary("vectors.bin");
 	match model {
-	    Ok(model) => 
+	    Ok(model) =>
 	    {
 	    	println!("{:?}", model.cosine("snow", 10));
 			let mut pos = Vec::new();
@@ -28,10 +28,10 @@ fn main(){
 	    },
 	    Err(err) => panic!("{:?}", err)
 	}
-	
+
 	let clusters = word2vec::wordclusters::WordClusters::load_from_file("classes.txt");
 	match clusters {
-	    Ok(clusters) => 
+	    Ok(clusters) =>
 	    {
 	    	println!("{:?}", clusters.get_cluster("belarus"));
 	    	println!("{:?}", clusters.get_words_on_cluster(6));

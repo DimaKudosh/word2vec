@@ -1,4 +1,4 @@
-# word2vec [![Build Status](https://travis-ci.org/DimaKudosh/word2vec.svg?branch=master)](https://travis-ci.org/DimaKudosh/word2vec)[![Coverage Status](https://coveralls.io/repos/github/DimaKudosh/word2vec/badge.svg?branch=master)](https://coveralls.io/github/DimaKudosh/word2vec?branch=master)
+# word2vec [![Build Status](https://travis-ci.org/DimaKudosh/word2vec.svg?branch=master)](https://travis-ci.org/DimaKudosh/word2vec)
 
 Rust interface to word2vec.
 

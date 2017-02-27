@@ -11,6 +11,16 @@ Documentation is available at https://github.com/DimaKudosh/word2vec/wiki
 
 ## Example
 
+Add this to your `cargo.toml`:
+
+```
+[dependencies]
+# …
+word2vec = "0.2.1"
+```
+
+Example for word similarity and word clusters:
+
 ```
 extern crate word2vec;
 

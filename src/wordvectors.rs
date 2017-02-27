@@ -1,9 +1,9 @@
+use byteorder::{ReadBytesExt, LittleEndian};
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::io::SeekFrom;
 use std::fs::File;
 use std::cmp::Ordering;
-use std::mem;
 use utils;
 use errors::Word2VecError;
 
@@ -44,10 +44,8 @@ impl WordVector {
             let word = try!(String::from_utf8(word_bytes));
             let mut current_vector: Vec<f32> = Vec::with_capacity(vector_size);
             for _ in 0..vector_size {
-                let mut buf: [u8; 4] = [0; 4];
-                try!(reader.read(&mut buf));
-                let vec = unsafe { mem::transmute::<[u8; 4], f32>(buf) };
-                current_vector.push(vec);
+                let val = try!(reader.read_f32::<LittleEndian>());
+                current_vector.push(val);
             }
             current_vector = utils::vector_norm(current_vector);
             vocabulary.push((word, current_vector));

@@ -6,9 +6,11 @@ pub fn dot_product(arr1: &Vec<f32>, arr2: &Vec<f32>) -> f32 {
     return result;
 }
 
-pub fn vector_norm(vector: Vec<f32>) -> Vec<f32> {
+pub fn vector_norm(vector: &mut Vec<f32>) {
     let sum = 1.0 / vector.iter().fold(0f32, |sum, &x| sum + (x * x)).sqrt();
-    vector.iter().map(|x| x * sum).collect::<Vec<f32>>()
+    for x in vector.iter_mut() {
+        (*x) *= sum;
+    }
 }
 
 /// Get the mean (average) of the given Iterator of numbers

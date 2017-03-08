@@ -47,7 +47,7 @@ impl WordVector {
                 let val = try!(reader.read_f32::<LittleEndian>());
                 current_vector.push(val);
             }
-            current_vector = utils::vector_norm(current_vector);
+            utils::vector_norm(&mut current_vector);
             vocabulary.push((word, current_vector));
             try!(reader.seek(SeekFrom::Current(1)));
         }
@@ -78,15 +78,14 @@ impl WordVector {
     pub fn cosine(&self, word: &str, n: usize) -> Option<Vec<(String, f32)>> {
         let word_vector = self.get_vector(word);
         match word_vector {
-            Some(val) => {
-                let mut metrics: Vec<(String, f32)> = Vec::with_capacity(self.vocabulary.len());
-                for word in self.vocabulary.iter() {
-                    metrics.push((word.0.clone(), utils::dot_product(&word.1, val)));
-                }
+            Some(val) => { // save index and cosine distance to current word
+                let mut metrics: Vec<(usize, f32)> = Vec::with_capacity(self.vocabulary.len());
+                metrics.extend(self.vocabulary.iter().enumerate().
+                        map(|(i, other_val)|
+                    (i, utils::dot_product(&other_val.1, val))));
                 metrics.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
-                metrics.remove(0);
-                metrics.truncate(n);
-                return Some(metrics);
+                Some(metrics[1..n+1].iter().map(|&(idx, dist)| 
+                         (self.vocabulary[idx].clone().0, dist)).collect())
             }
             None => None,
         }

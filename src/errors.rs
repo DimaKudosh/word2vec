@@ -1,8 +1,13 @@
+use std::error;
 use std::fmt;
 use std::io;
 use std::string::FromUtf8Error;
 
 
+/// Common error type for errors  concerning loading and processing binary word vectors
+///
+/// This error type mostly wraps I/O and encoding errors, but also adds crate-specific error
+/// variants.
 #[derive(Debug)]
 pub enum Word2VecError {
     Io(io::Error),
@@ -10,6 +15,23 @@ pub enum Word2VecError {
     WrongHeader,
 }
 
+impl error::Error for Word2VecError {
+    fn description(&self) -> &str {
+        match *self {
+            Word2VecError::Decode(ref err) => err.description(),
+            Word2VecError::Io(ref err) => err.description(),
+            Word2VecError::WrongHeader => "Wrong header format",
+        }
+    }
+
+    fn cause(&self) -> Option<&error::Error> {
+        match *self {
+            Word2VecError::Decode(ref e) => e.cause(),
+            Word2VecError::Io(ref e) => e.cause(),
+            _ => None,
+        }
+    }
+}
 
 impl fmt::Display for Word2VecError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -32,3 +54,4 @@ impl From<FromUtf8Error> for Word2VecError {
         Word2VecError::Decode(err)
     }
 }
+

@@ -115,14 +115,13 @@ impl WordVector {
         for i in 0..self.vector_size {
             mean.push(utils::mean(vectors.iter().map(|v| v[i])));
         }
-        let mut metrics: Vec<(String, f32)> = Vec::new();
+        let mut metrics: Vec<(&String, f32)> = Vec::new();
         for word in self.vocabulary.iter() {
-            metrics.push((word.0.clone(), utils::dot_product(&word.1, &mean)));
+            metrics.push((&word.0, utils::dot_product(&word.1, &mean)));
         }
         metrics.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
-        metrics.retain(|x| exclude.contains(&x.0) == false);
-        metrics.truncate(n);
-        Some(metrics)
+        metrics.retain(|x| !exclude.contains(&x.0));
+        Some(metrics.iter().take(n).map(|&(x,y)| (x.clone(), y)).collect())
     }
 
     /// Get the number of all known words from the vocabulary.

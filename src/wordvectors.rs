@@ -1,9 +1,9 @@
+use byteorder::{ReadBytesExt, LittleEndian};
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::io::SeekFrom;
 use std::fs::File;
 use std::cmp::Ordering;
-use std::mem;
 use utils;
 use errors::Word2VecError;
 
@@ -44,12 +44,10 @@ impl WordVector {
             let word = try!(String::from_utf8(word_bytes));
             let mut current_vector: Vec<f32> = Vec::with_capacity(vector_size);
             for _ in 0..vector_size {
-                let mut buf: [u8; 4] = [0; 4];
-                try!(reader.read(&mut buf));
-                let vec = unsafe { mem::transmute::<[u8; 4], f32>(buf) };
-                current_vector.push(vec);
+                let val = try!(reader.read_f32::<LittleEndian>());
+                current_vector.push(val);
             }
-            current_vector = utils::vector_norm(current_vector);
+            utils::vector_norm(&mut current_vector);
             vocabulary.push((word, current_vector));
             try!(reader.seek(SeekFrom::Current(1)));
         }
@@ -80,15 +78,14 @@ impl WordVector {
     pub fn cosine(&self, word: &str, n: usize) -> Option<Vec<(String, f32)>> {
         let word_vector = self.get_vector(word);
         match word_vector {
-            Some(val) => {
-                let mut metrics: Vec<(String, f32)> = Vec::with_capacity(self.vocabulary.len());
-                for word in self.vocabulary.iter() {
-                    metrics.push((word.0.clone(), utils::dot_product(&word.1, val)));
-                }
+            Some(val) => { // save index and cosine distance to current word
+                let mut metrics: Vec<(usize, f32)> = Vec::with_capacity(self.vocabulary.len());
+                metrics.extend(self.vocabulary.iter().enumerate().
+                        map(|(i, other_val)|
+                    (i, utils::dot_product(&other_val.1, val))));
                 metrics.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
-                metrics.remove(0);
-                metrics.truncate(n);
-                return Some(metrics);
+                Some(metrics[1..n+1].iter().map(|&(idx, dist)| 
+                         (self.vocabulary[idx].clone().0, dist)).collect())
             }
             None => None,
         }
@@ -118,14 +115,13 @@ impl WordVector {
         for i in 0..self.vector_size {
             mean.push(utils::mean(vectors.iter().map(|v| v[i])));
         }
-        let mut metrics: Vec<(String, f32)> = Vec::new();
+        let mut metrics: Vec<(&String, f32)> = Vec::new();
         for word in self.vocabulary.iter() {
-            metrics.push((word.0.clone(), utils::dot_product(&word.1, &mean)));
+            metrics.push((&word.0, utils::dot_product(&word.1, &mean)));
         }
         metrics.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
-        metrics.retain(|x| exclude.contains(&x.0) == false);
-        metrics.truncate(n);
-        Some(metrics)
+        metrics.retain(|x| !exclude.contains(&x.0));
+        Some(metrics.iter().take(n).map(|&(x,y)| (x.clone(), y)).collect())
     }
 
     /// Get the number of all known words from the vocabulary.

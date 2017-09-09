@@ -1,6 +1,6 @@
 [package]
 name = "word2vec"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["Dima Kudosh <dimakudosh@gmail.com>", "Sebastian Humenda"]
 description = "Rust interface to word2vec."
 documentation = "https://github.com/DimaKudosh/word2vec/wiki"

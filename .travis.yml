@@ -7,6 +7,7 @@ addons:
       - libelf-dev
       - libdw-dev
       - binutils-dev # optional: only required for the --verify flag of coveralls
+      - wget
 rust:
   - stable
   - beta
@@ -14,6 +15,7 @@ rust:
 before_script:
   - pip install 'travis-cargo<0.2' --user
   - export PATH=$HOME/.local/bin/:$PATH
+  - wget -c -O vectors.bin 'https://www.dropbox.com/s/y4ls6yd4k0wbzhp/vectors.bin?dl=0'
 script:
   - travis-cargo build
   - travis-cargo test
@@ -21,7 +23,7 @@ script:
   - travis-cargo --only stable doc
 after_success:
   - travis-cargo --only stable doc-upload
-  - travis-cargo coveralls --no-sudo --coveralls-id=$TRAVIS_JOB_ID --verify
+  - travis-cargo coveralls --no-sudo --verify
 
 env:
   global:

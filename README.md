@@ -21,7 +21,7 @@ word2vec = "0.3.0"
 
 Example for word similarity and word clusters:
 
-```
+```rust
 extern crate word2vec;
 
 fn main(){

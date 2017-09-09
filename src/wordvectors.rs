@@ -1,7 +1,6 @@
 use byteorder::{ReadBytesExt, LittleEndian};
 use std::io::prelude::*;
 use std::io::BufReader;
-use std::io::SeekFrom;
 use std::fs::File;
 use std::cmp::Ordering;
 use utils;
@@ -40,8 +39,8 @@ impl WordVector {
         for _ in 0..vocabulary_size {
             let mut word_bytes: Vec<u8> = Vec::new();
             try!(reader.read_until(b' ', &mut word_bytes));
-            word_bytes.pop();
-            let word = try!(String::from_utf8(word_bytes));
+            // trim newlines, some vector files have newlines in front of a new word, others don't
+            let word = try!(String::from_utf8(word_bytes)).trim().into();
             let mut current_vector: Vec<f32> = Vec::with_capacity(vector_size);
             for _ in 0..vector_size {
                 let val = try!(reader.read_f32::<LittleEndian>());
@@ -49,7 +48,6 @@ impl WordVector {
             }
             utils::vector_norm(&mut current_vector);
             vocabulary.push((word, current_vector));
-            try!(reader.seek(SeekFrom::Current(1)));
         }
         Ok(WordVector {
             vocabulary: vocabulary,

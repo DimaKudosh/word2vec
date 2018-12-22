@@ -13,7 +13,12 @@ pub struct WordClusters {
 impl WordClusters {
     pub fn load_from_file(file_name: &str) -> Result<WordClusters, Word2VecError> {
         let file = try!(File::open(file_name));
-        let mut reader = BufReader::new(file);
+        let reader = BufReader::new(file);
+
+        return WordClusters::load_from_reader(reader)
+    }
+
+    pub fn load_from_reader<R: BufRead>(mut reader: R) -> Result<WordClusters, Word2VecError> {
         let mut buffer = String::new();
         let mut clusters: HashMap<i32, Vec<String>> = HashMap::new();
         while try!(reader.read_line(&mut buffer)) > 0 {

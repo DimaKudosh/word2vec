@@ -16,7 +16,7 @@ Add this to your `cargo.toml`:
 ```
 [dependencies]
 # …
-word2vec = "0.3.0"
+word2vec = "0.3.1"
 ```
 
 Example for word similarity and word clusters:

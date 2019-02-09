@@ -1,11 +1,10 @@
-use byteorder::{ReadBytesExt, LittleEndian};
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::fs::File;
 use std::cmp::Ordering;
 use utils;
 use errors::Word2VecError;
-
+use vectorreader::WordVectorReader;
 
 /// Representation of a word vector space
 ///
@@ -33,32 +32,20 @@ impl WordVector {
     ///
     /// Word2vec is able to store the word vectors in a binary format. This function parses the bytes in that format
     /// and loads the vectors into RAM.
-    pub fn load_from_reader<R: BufRead>(mut reader: R) -> Result<WordVector, Word2VecError> {
-        let mut header = String::new();
-        try!(reader.read_line(&mut header));
-        let header_info = header.split_whitespace()
-            .filter_map(|x| x.parse::<usize>().ok())
-            .take(2)
-            .collect::<Vec<usize>>();
-        if header_info.len() != 2 {
-            return Err(Word2VecError::WrongHeader);
+    pub fn load_from_reader<R: BufRead>(reader: R) -> Result<WordVector, Word2VecError> {
+
+        let reader = try!(WordVectorReader::new_from_reader(reader));
+        let vector_size = reader.vector_size();
+
+        let mut vocabulary: Vec<(String, Vec<f32>)> = Vec::with_capacity(reader.vocabulary_size());
+        for item in reader {
+
+            let (word, mut vector) = item;
+            utils::vector_norm(&mut vector);
+
+            vocabulary.push((word, vector));
         }
-        let vocabulary_size = header_info[0];
-        let vector_size = header_info[1];
-        let mut vocabulary: Vec<(String, Vec<f32>)> = Vec::with_capacity(vocabulary_size);
-        for _ in 0..vocabulary_size {
-            let mut word_bytes: Vec<u8> = Vec::new();
-            try!(reader.read_until(b' ', &mut word_bytes));
-            // trim newlines, some vector files have newlines in front of a new word, others don't
-            let word = try!(String::from_utf8(word_bytes)).trim().into();
-            let mut current_vector: Vec<f32> = Vec::with_capacity(vector_size);
-            for _ in 0..vector_size {
-                let val = try!(reader.read_f32::<LittleEndian>());
-                current_vector.push(val);
-            }
-            utils::vector_norm(&mut current_vector);
-            vocabulary.push((word, current_vector));
-        }
+
         Ok(WordVector {
             vocabulary: vocabulary,
             vector_size: vector_size,

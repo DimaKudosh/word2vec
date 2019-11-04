@@ -24,10 +24,10 @@ impl error::Error for Word2VecError {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
-            Word2VecError::Decode(ref e) => e.cause(),
-            Word2VecError::Io(ref e) => e.cause(),
+            Word2VecError::Decode(ref e) => e.source(),
+            Word2VecError::Io(ref e) => e.source(),
             _ => None,
         }
     }

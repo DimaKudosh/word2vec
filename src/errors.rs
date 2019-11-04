@@ -24,7 +24,7 @@ impl error::Error for Word2VecError {
         }
     }
 
-    fn cause(&self) -> Option<&dyn error::Error> {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match *self {
             Word2VecError::Decode(ref e) => e.source(),
             Word2VecError::Io(ref e) => e.source(),

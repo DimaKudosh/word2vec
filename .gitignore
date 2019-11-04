@@ -1,2 +1,5 @@
+.idea
+**/*.rs.bk
 Cargo.lock
 target
+example

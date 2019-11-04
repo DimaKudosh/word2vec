@@ -27,7 +27,7 @@ impl<R : BufRead> WordVectorReader<R> {
         
         // Read UTF8 header string from start of file
         let mut header = String::new();
-        try!(reader.read_line(&mut header));
+        reader.read_line(&mut header)?;
 
         //Parse 2 integers, separated by whitespace
         let header_info = header.split_whitespace()
@@ -42,9 +42,9 @@ impl<R : BufRead> WordVectorReader<R> {
         return Ok(WordVectorReader {
             vocabulary_size: header_info[0],
             vector_size: header_info[1],
-            reader: reader,
             vectors_read: 0,
-            ended_early: false
+            ended_early: false,
+            reader,
         });
     }
 

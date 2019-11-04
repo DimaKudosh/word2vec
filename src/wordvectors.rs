@@ -22,7 +22,7 @@ impl WordVector {
     /// Word2vec is able to store the word vectors in a binary file. This function parses the file
     /// and loads the vectors into RAM.
     pub fn load_from_binary(file_name: &str) -> Result<WordVector, Word2VecError> {
-        let file = try!(File::open(file_name));
+        let file = File::open(file_name)?;
         let reader = BufReader::new(file);
 
         return WordVector::load_from_reader(reader);
@@ -34,7 +34,7 @@ impl WordVector {
     /// and loads the vectors into RAM.
     pub fn load_from_reader<R: BufRead>(reader: R) -> Result<WordVector, Word2VecError> {
 
-        let reader = try!(WordVectorReader::new_from_reader(reader));
+        let reader = WordVectorReader::new_from_reader(reader)?;
         let vector_size = reader.vector_size();
 
         let mut vocabulary: Vec<(String, Vec<f32>)> = Vec::with_capacity(reader.vocabulary_size());
@@ -47,13 +47,13 @@ impl WordVector {
         }
 
         Ok(WordVector {
-            vocabulary: vocabulary,
-            vector_size: vector_size,
+            vocabulary,
+            vector_size,
         })
     }
 
     fn get_index(&self, word: &str) -> Option<usize> {
-        self.vocabulary.iter().position(|x| x.0 == word)
+        self.vocabulary.iter().position(|x| x.0.as_str() == word)
     }
 
     /// Get word vector for the given word.
@@ -130,7 +130,7 @@ impl WordVector {
     }
 
     /// Get all known words from the vocabulary.
-    pub fn get_words<'a>(&'a self) -> Words<'a> {
+    pub fn get_words(& self) -> Words {
         Words::new(&self.vocabulary)
     }
 }
